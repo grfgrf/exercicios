@@ -1,0 +1,96 @@
+--sqlru 47 Find the countries that have lost all their ships in battles.
+WITH total AS(
+SELECT country,count(name) conta FROM (
+SELECT c.country, s.name FROM classes c JOIN ships s ON s.class=c.class
+union
+select c.country, o.ship FROM classes c JOIN outcomes o ON o.ship=c.class
+) t 
+GROUP BY country),
+
+afundados AS (SELECT country,count(ship) conta FROM (
+SELECT c.country, s.name FROM classes c JOIN ships s ON s.class=c.class
+union
+select c.country, o.ship FROM classes c JOIN outcomes o ON o.ship=c.class
+) t JOIN outcomes o ON t.name=o.ship
+WHERE o.result='sunk'
+group by country)
+
+select t.country from total t JOIN afundados a ON a.country=t.country
+WHERE a.conta=t.conta
+
+
+--sqlru 32 --transactsql
+/* 
+One of the characteristics of a ship is one-half the cube of the calibre of its main guns (mw).
+Determine the average ship mw with an accuracy of two decimal places for each country having ships in the database.
+*/
+SELECT country,CAST(AVG(POWER(bore,3)/2) AS DECIMAL(7,2)) FROM (
+
+SELECT s.name,c.country,c.bore FROM classes c JOIN ships s ON s.class=c.class
+UNION
+SELECT o.ship,c.country,c.bore FROM outcomes o JOIN classes c ON o.ship=c.class
+) t
+GROUP BY country
+
+--sqlru 73
+WITH oeb AS ( --column name "date" bug --trocando para bdate
+             SELECT ship,name,bdate,result 
+               FROM (
+                     (SELECT null name,null bdate FROM battles) 
+                       UNION                                    
+                     (SELECT * from battles)
+                    )t 
+               JOIN outcomes o ON o.battle=t.name
+             ),
+
+tudotudo AS ( --view com todos dados das 4 tabelas 
+             (SELECT c.class,s.name shipname,c.country,c.type,c.numguns,c.bore,
+                     c.displacement,s.launched,o.name battlename,o.bdate,o.result
+                FROM classes c JOIN ships s ON s.class=c.class 
+                          LEFT JOIN   oeb o ON o.ship=s.name)
+               UNION
+             (SELECT c.class,o.ship,c.country,c.type,c.numguns,c.bore,
+                     c.displacement,s.launched,o.name,o.bdate,o.result 
+                FROM classes c JOIN   oeb o ON o.ship=c.class 
+                          LEFT JOIN ships s ON c.class=s.class)
+            )
+
+(SELECT DISTINCT country, name --todos países X todas batalhas possíveis
+   FROM classes CROSS JOIN (SELECT DISTINCT name FROM battles))
+ MINUS
+(SELECT DISTINCT country,battlename -- menos as batalhas que os países tem ships
+   FROM tudotudo 
+  WHERE shipname IN (SELECT ship FROM outcomes))
+
+--sqlru 132
+WITH battles2 AS (
+SELECT * FROM (
+SELECT null name,null bdate FROM battles
+UNION
+SELECT * from battles) t
+WHERE name IS NOT NULL)
+
+
+SELECT 
+     (CASE WHEN y=0 AND M=0 THEN null
+      WHEN y=0 AND M<>0 THEN m||' m.'
+      ELSE Y||' y., '||M||' m.'
+      END
+     ) age,
+     d1,d2
+FROM (
+
+SELECT 
+
+(CASE WHEN EXTRACT(month FROM date2)=EXTRACT(month FROM date1)
+           AND EXTRACT(day FROM date1) = EXTRACT(day FROM date2) 
+           THEN ROUND(EXTRACT(day from date2-date1)/365.2426) ELSE TRUNC(EXTRACT(day from date2-date1)/365.2426)
+END) y,
+MOD(TRUNC(months_between(date2,date1)),12) m,
+to_char(date1,'yyyy-mm-dd') d1, 
+to_char(date2,'yyyy-mm-dd') d2
+FROM (
+       SELECT bdate date1,
+              NVL(LEAD(bdate,1)OVER(ORDER BY bdate),current_date) date2  
+       FROM battles2) t 
+)t2
