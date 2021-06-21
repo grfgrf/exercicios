@@ -513,6 +513,37 @@ SELECT DISTINCT p.maker,
   GROUP BY t.maker,t.type,tm.cmodel
   ORDER BY 1
 
+--59
+-- coluna "out" e "date" error, usando novos nomes:
+WITH monta_outcome AS (
+
+select null as point,null as date1 ,null as inc from dual
+union
+select * from outcome_o where point is not null
+),
+
+outcome1_o as (
+select * from monta_outcome where point is not null
+),
+
+monta_income AS (
+select null as point,null as date1 ,null as inc from dual
+union
+select * from income_o
+),
+income1_o as (
+select * from monta_income where point is not null
+)
+--fim troca nome coluna
+
+   SELECT point,
+          SUM(inc)-SUM(out) 
+     FROM (
+           SELECT point, inc, 0 out FROM income1_o
+           UNION ALL
+           SELECT point, 0 inc, inc FROM outcome1_o
+          )
+ GROUP BY point
 --73
 WITH oeb AS ( --column name "date" bug --trocando para bdate
              SELECT ship,name,bdate,result 
