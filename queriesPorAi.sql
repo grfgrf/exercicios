@@ -442,7 +442,9 @@ SELECT o.ship,c.class,c.displacement,c.numguns,c.country,c.type,c.bore FROM outc
 )
 
 SELECT name FROM allships
-WHERE  (type='bb' OR type  IS NULL) AND (numguns>=9 or numguns  IS NULL) AND (bore<19 or bore  IS NULL) AND (displacement<=65000 or displacement  IS NULL) AND (country='Japan' or country  IS NULL)
+ WHERE  (type='bb' OR type  IS NULL) AND (numguns>=9 or numguns  IS NULL) 
+        AND (bore<19 or bore  IS NULL) AND (displacement<=65000 or displacement  IS NULL) 
+        AND (country='Japan' or country  IS NULL)
 
 
 --53
