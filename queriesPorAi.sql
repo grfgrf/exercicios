@@ -490,6 +490,33 @@ WITH oeb AS
            ) t
   GROUP BY class
 
+--57
+WITH todasClassesENomes AS(
+
+SELECT DISTINCT class, NVL(name,class) name  
+  FROM (
+        SELECT NVL(c.class,o.ship) class , s.name name, o.result result 
+          FROM classes c LEFT JOIN ships s ON s.class=c.class 
+                         FULL JOIN outcomes o ON o.ship=s.name
+
+        )
+ORDER BY 1
+)
+
+
+SELECT c.class, 
+       COUNT(o.result) afundados 
+  FROM todasClassesENomes c 
+  JOIN outcomes o 
+    ON o.ship=c.name 
+       AND o.result='sunk' 
+ WHERE EXISTS (SELECT class 
+                 FROM todasClassesENomes c2 
+                WHERE c2.class=c.class
+                GROUP BY class
+               HAVING COUNT(name)>2)
+ GROUP BY c.class
+
 
 --58
 WITH tmodels AS (
