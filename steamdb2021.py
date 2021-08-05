@@ -1,5 +1,4 @@
 
-from bs4 import BeautifulSoup#, SoupStrainer
 import time
 import grequests
 import re
