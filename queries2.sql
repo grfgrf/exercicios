@@ -1,5 +1,5 @@
 
---EACH DEP - TOP 3 SAL
+--EACH DEP - TOP 3 SAL w/o FETCH
 
 with emp_rows as (
                   select t.departmentid, 
