@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class Main {
+public class java01 {
 
     public static void main(String[] args) {
         String[] vetorString = {"pomba","oi","astra","padaria"};
